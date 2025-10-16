@@ -1,0 +1,56 @@
+// Functional programming
+คือ การใช้ฟังก์ชันเป็นหลัก และหลีกเลี่ยงการเปลี่ยนแปลงสถานะ แยกฟังก์ชันย่อยเล็ก ๆ แล้วประกอบกัน ทำให้อ่าน ทดสอบ (unit test) และ reuse ง่าย
+
+1 .///// First-class functions และ Higher-order functions /////
+//// First-Class Functions
+ฟังก์ชันที่สามารถจัดการเหมือนค่าปกติอื่น ๆ (สามารถกำหนดให้ตัวแปร ส่งเป็นอาร์กิวเมนต์ หรือส่งคืนจากฟังก์ชันอื่น ๆ) 
+คำอธิบายจาก ตัวอย่าง
+ 1.)const greet = function(name) { ... } = สร้างฟังก์ชันแบบ function expression แล้วเก็บไว้ในตัวแปร greet
+    greet("Alice") = เรียกใช้ฟังก์ชันโดยผ่านตัวแปร greet ได้ผลลัพธ์ "Hello, Alice!"
+ 2.)function executeFunction(fn, value) { return fn(value); } = ฟังก์ชันนี้รับฟังก์ชัน fn เป็นอาร์กิวเมนต์ แล้วเรียกใช้มันพร้อมค่าที่ส่งมา
+    executeFunction(greet, "Bob") = ส่งฟังก์ชัน greet เข้าไปใน executeFunction = ภายใน executeFunction จะเรียก fn(value) -> ซึ่งคือ greet("Bob") -> คืน "Hello, Bob!"
+ 3.)function createMultiplier(multiplier) { return function(value) { return value * multiplier; }; } = ฟังก์ชันนี้คืนค่าฟังก์ชันอีกตัวที่คูณค่าด้วย multiplier
+    const double = createMultiplier(2) -> double(5) = คำนวณ 5 * 2 ได้ 10
+    
+//// Higher-Order Functions 
+ฟังก์ชันที่รับฟังก์ชันอื่นเป็นอาร์กิวเมนต์หรือคืนค่าฟังก์ชัน
+คำอธิบายจาก ตัวอย่าง
+ 1.)applyOperation(arr, operation) = รับ array กับฟังก์ชันที่จะถูกใช้กับสมาชิกใน array
+ 2.)arr.map(operation) = .map() จะ “เรียกฟังก์ชัน operation” สำหรับแต่ละค่าของ arrayเช่น square(1), square(2) ...
+ 3.)square(num) = ฟังก์ชันธรรมดาที่คืนค่ากำลังสองของตัวเลข
+ 4.)applyOperation(numbers, square) = จะได้ [1,4,9,16]
+ 5.)function createLogger(prefix) { return function(message) { ... }; } = ฟังก์ชันนี้สร้าง “ฟังก์ชันใหม่” ที่จำค่า prefix ไว้
+ 6.)const infoLogger = createLogger("INFO"); = คืนฟังก์ชันที่มี prefix = "INFO"
+ 7.)infoLogger("This is an informational message.") = เรียกฟังก์ชันภายใน -> แสดง [INFO] This is an informational message.
+2.///// Pure Function & Impure Function /////
+//// Pure Function 
+- ผลลัพธ์ขึ้นอยู่กับ input เท่านั้น ผลลัพธ์ของฟังก์ชันจะต้องคงที่ถ้าให้ input เดิม ฟังก์ชันจะไม่ขึ้นอยู่กับสถานะภายนอกหรือค่าที่เปลี่ยนแปลง 
+และฟังก์ชันจะไม่ทำให้เกิดผลกระทบกับโลกภายนอก เช่น ไม่แก้ไขตัวแปร global, DOM, file, database หรือ console output นอกฟังก์ชัน
+
+////  Impure Function 
+ฟังก์ชันอาจเปลี่ยนแปลงค่าของตัวแปรภายนอก, แก้ไขข้อมูลในโครงสร้างข้อมูล, หรือทำงานกับ I/O เช่น การเขียนไฟล์หรือการเรียก API
+คำอธิบายจาก ตัวอย่าง ทั้ง Pure กับ Impure
+ 1.)add(a, b) → คืนผลลัพธ์จาก input โดยตรง ไม่พึ่งค่าภายนอก
+ 2.)เรียก add(2,3) กี่ครั้งก็ได้ผลเท่ากัน (5) → Pure Function
+ 3.)ส่วนของ addToX ใช้ตัวแปร global x
+  - ครั้งแรก x = 10
+  - หลังเรียก addToX(5) → x = 15
+  - ครั้งต่อไป x = 20
+  - ผลลัพธ์เปลี่ยนแปลงทุกครั้ง
+
+3 .///// Function Composition /////
+คือ การสร้าง ฟังก์ชันใหม่จากฟังก์ชันพื้นฐานหลายตัว โดยไม่ต้องเขียนโค้ดซ้ำ
+ 1.)const compose = (...fns) => x => fns.reduceRight((acc, fn) => fn(acc), x);
+  - รับฟังก์ชันหลายตัวในรูป array fns
+  - คืนฟังก์ชันใหม่ที่เมื่อรับค่า x เข้ามา → จะส่งค่า x ผ่านฟังก์ชันทั้งหมดจากขวาไปซ้าย
+ 2.)compose(subtract1, multiply3, add2) = จะได้ฟังก์ชันใหม่ที่ทำงานเหมือน subtract1(multiply3(add2(x)))
+ 3.)composed(5)
+→ เริ่มจาก 5 → add2(5) = 7
+→ multiply3(7) = 21
+→ subtract1(21) = 20
+
+4 .///// Closure /////
+ทำให้ฟังก์ชันสามารถ “จำ” ตัวแปรจาก scope ภายนอก ของมันได้แม้ว่าฟังก์ชันนั้นจะถูกเรียกใช้งานภายนอก scope
+ 1.)function greeting(message) = สร้างฟังก์ชันที่รับข้อความทักทาย
+ 2.)ภายใน greeting คืน “ฟังก์ชันอีกตัว” ที่ใช้ตัวแปร message
+ 3.)const sayHello = greeting('Hello'); = คืนฟังก์ชันที่จำค่า message = 'Hello' ไว้

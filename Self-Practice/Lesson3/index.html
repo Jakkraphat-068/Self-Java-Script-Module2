@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+</head>
+<body>
+    <!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>Web Settings Example</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      transition: 0.3s;
+    }
+    label { display: block; margin-top: 10px; }
+    button { margin-top: 15px; padding: 6px 12px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h2>ตั้งค่าหน้าจอของคุณ</h2>
+
+  <label>Background Color:
+    <input type="color" id="bgColor">
+  </label>
+
+  <label>Font Color:
+    <input type="color" id="fontColor">
+  </label>
+
+  <label>Font Size:
+    <select id="fontSize">
+      <option value="small">Small</option>
+      <option value="medium">Medium</option>
+      <option value="large">Large</option>
+    </select>
+  </label>
+
+  <button id="saveBtn">Save Settings</button>
+  <button id="resetBtn">Reset</button>
+  
+  <script src="./main.js" type="module"></script>
+</body>
+</html>
