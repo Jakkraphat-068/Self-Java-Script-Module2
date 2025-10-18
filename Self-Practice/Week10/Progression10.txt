@@ -1,0 +1,147 @@
+**////////** Inside cookieUtil.js **//////**
+///// Cookies /////
+เก็บข้อมูลใน browser และส่งไปกับ HTTP Request ทุกครั้ง
+ใช้สำหรับ session management (เช่น token, cart ID)
+สามารถตั้งวันหมดอายุ (expires) หรือกำหนดให้ลบ (new Date(0))
+เข้ารหัสชื่อ/ค่า เพื่อป้องกันอักขระพิเศษ (encodeURIComponent)
+
+///
+class CookieUtil {
+  static get(name) {
+    let cookieName = `${encodeURIComponent(name)}=`,
+      cookieStart = document.cookie.indexOf(cookieName),
+      cookieValue = null
+    if (cookieStart > -1) {
+      let cookieEnd = document.cookie.indexOf(';', cookieStart)
+      if (cookieEnd === -1) {
+        cookieEnd = document.cookie.length
+      }
+      cookieValue = decodeURIComponent(
+        document.cookie.substring(cookieStart + cookieName.length, cookieEnd)
+      )
+    }
+    return cookieValue
+  }
+
+  static set(name, value, expires) {
+    let cookieText = `${encodeURIComponent(name)}=${encodeURIComponent(value)}`
+    if (expires instanceof Date) {
+      console.log(expires)
+      cookieText += `;expires=${expires}`
+    }
+    document.cookie = cookieText
+    console.log(document.cookie)
+  }
+
+  static unset(name) {
+    CookieUtil.set(name, '', new Date(0))
+  }
+}
+export { CookieUtil }
+///
+
+Desciption แต่ล่ะส่วนของโค้ด
+1.) document.cookie
+ เป็น property ของ browser ที่เก็บ cookie ทั้งหมดในหน้านั้น ลักษณะเป็น string เดียว เช่น "theme=dark; font-size=14px; session=abc123"
+2.) encodeURIComponent() / decodeURIComponent()
+ ใช้สำหรับเข้ารหัสและถอดรหัสข้อความ เพื่อให้เก็บใน cookie ได้ถูกต้อง เช่น "my value" → my%20value
+3.) ฟังก์ชัน get(name) ดึงค่าของ cookie ตามชื่อ
+ 3.1) let cookieName = `${encodeURIComponent(name)}=`
+      let cookieStart = document.cookie.indexOf(cookieName)
+    - หาตำแหน่งเริ่มต้นของ cookie ที่ต้องการ เช่น cookie มีค่า "theme=dark; color=red"
+    - ถ้า name = "theme" → cookieStart จะได้ index ตำแหน่งที่คำว่า "theme=" เริ่มต้น
+ 3.2) if (cookieStart > -1) {
+      let cookieEnd = document.cookie.indexOf(';', cookieStart)
+      if (cookieEnd === -1) cookieEnd = document.cookie.length
+    }
+    - หาตำแหน่งสิ้นสุด (คือเครื่องหมาย ; ถัดไป)  ถ้าไม่มี ; แปลว่ามันคือ cookie ตัวสุดท้าย
+ 3.3) cookieValue = decodeURIComponent(
+      document.cookie.substring(cookieStart + cookieName.length, cookieEnd)
+    )
+    - ตัด substring ระหว่างชื่อ cookie กับ ; เพื่อเอาเฉพาะค่าออกมา แล้วถอดรหัส (decodeURIComponent)
+4.) ฟังก์ชัน set(name, value, expires)
+ 4.1) let cookieText = `${encodeURIComponent(name)}=${encodeURIComponent(value)}`
+    - สร้าง string cookie เช่น theme=dark
+ 4.2) if (expires instanceof Date) {
+       cookieText += `;expires=${expires}`
+      }
+    - ถ้ารับพารามิเตอร์ expires เป็นวันที่ ให้ต่อท้ายด้วย ;expires=วันที่ เช่น theme=dark;expires=Sat, 20 Oct 2025 12:00:00 GMT
+ 4.3) document.cookie = cookieText
+    - เขียนค่า cookie ลงใน browser (ถ้า cookie เดิมชื่อซ้ำจะถูกเขียนทับ)
+5.) ฟังก์ชัน unset(name)
+  CookieUtil.set(name, '', new Date(0))
+    -เคล็ดลับการลบ cookie คือ ตั้งวันหมดอายุย้อนหลัง เช่น Thu, 01 Jan 1970 ซึ่ง browser จะลบทันที
+
+**////////** Inside main.js **//////**
+
+///
+import { CookieUtil } from "./cookieUtil"
+
+console.log(CookieUtil.get("theme"))
+console.log(CookieUtil.get("color"))
+
+CookieUtil.set("cartId", "abc123", new Date(2025, 9, 20))
+console.log(CookieUtil.get("cartId"))
+console.log(document.cookie)
+
+CookieUtil.unset("color")
+console.log(document.cookie)
+///
+
+Desciption
+1.)ดึงค่าของ cookie ที่ชื่อ theme และ color
+2.)เพิ่ม cookie ใหม่ cartId=abc123 ที่หมดอายุ 20 ต.ค. 2025
+3.)แสดงผล cookie ทั้งหมดใน document.cookie
+4.)ลบ cookie color โดยตั้งวันหมดอายุย้อนหลัง
+
+
+*///// Local Storage /////*
+ใช้เก็บข้อมูลถาวรฝั่ง client (ไม่ส่งไป server)
+มีขนาดใหญ่กว่า cookie มาก
+เหมาะกับการเก็บข้อมูลที่ไม่สำคัญ เช่น theme, username, setting
+
+ ///
+ let counter = localStorage.getItem("count")
+if (counter === null) localStorage.setItem("count", 1)
+else localStorage.setItem("count", ++counter)
+alert(counter)
+localStorage.removeItem("count")
+localStorage.clear()
+///
+
+Desciption
+1.)localStorage.getItem(key) = ดึงค่าที่เก็บไว้
+2.)localStorage.setItem(key, value)	= บันทึกค่า (ค่าเก่าจะถูกเขียนทับ)
+3.)localStorage.removeItem(key)	= ลบ key เดียว
+4.)localStorage.clear()	= ลบทุกอย่างใน localStorage
+
+ความแตกต่างกับ Cookies and localStorage
+รายการ	            Cookies	                  localStorage
+ การส่งไปกับ server	  ถูกส่งทุกครั้งใน HTTP Header	 ไม่ส่งไป
+ อายุข้อมูล	           ตามวันหมดอายุที่ตั้งไว้	        คงอยู่จนผู้ใช้ลบ
+ ขนาดที่เก็บได้	        ประมาณ 4 KB	              ประมาณ 5–10 MB
+ การเข้าถึง	           ผ่าน document.cookie	      ผ่าน localStorage object
+ การใช้งาน	          ใช้เก็บ session, token	  ใช้เก็บ setting, preference
+
+*///// Session Storage /////*
+เหมือน localStorage ทุกอย่าง ต่างกันตรงที่ sessionStorage จะหายเมื่อปิดแท็บ
+ดังนั้นถ้าเปิดเว็บในแท็บใหม่ ค่า sessionStorage จะไม่ถูกแชร์ระหว่างแท็บ
+-ใช้เก็บข้อมูลชั่วคราวในsessionเดียว
+-ปิดแท็บแล้วข้อมูลจะหาย
+-ใช้กรณีต้องการ cache ชั่วคราว เช่น “ข้อมูลที่กรอกในแบบฟอร์ม”
+///
+let counter = sessionStorage.getItem("count") {
+ if (counter === null) sessionStorage.setItem("count", 1)
+ else sessionStorage.setItem("count", ++counter)
+ alert(counter)
+}
+sessionStorage.removeItem("count")
+sessionStorage.clear()
+
+
+
+
+      
+
+ 
+

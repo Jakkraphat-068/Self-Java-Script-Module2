@@ -1,3 +1,4 @@
+// inside cookieUtill.js
 class CookieUtil {
   static get(name) {
     let cookieName = `${encodeURIComponent(name)}=`,

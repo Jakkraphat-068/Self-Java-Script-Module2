@@ -1,307 +1,193 @@
-*///// 1. Query Element (การค้นหาองค์ประกอบ) //////*
-
-*//// 1.1 getElementById, querySelector, querySelectorAll 
- เมื่อ browser โหลด HTML มันจะสร้าง DOM Tree และเก็บทุก element เป็น node. document คือ root ของ treeคำสั่งเหล่านี้คือวิธี ค้นหา node จาก tree นั้น
-getElementById() -> ค้นเร็วสุด เพราะ id เป็น unique
-querySelector() -> ใช้ CSS Selector (ยืดหยุ่นสุด)
-querySelectorAll() -> เหมาะสำหรับเลือกหลาย node
-
-///
-1. query an element node that has id "soup"
-const soupIdElement = document.getElementById("soup")
-console.log(soupIdElement) //<ul id="soup">
-
-const soupSelectorElement = document.querySelector("#soup")
-console.log(soupSelectorElement) //<ul id="soup">
-
-//get NodeList collection
-const soupSelectorAllElement = document.querySelectorAll("#soup")
-console.log(soupSelectorAllElement) //NodeList [ ul#soup ]
-console.log(soupSelectorAllElement.length) //1
-console.log(soupSelectorAllElement[0]) //<ul id="soup">
-soupSelectorAllElement.forEach((ele) => console.log(ele)) //<ul id="soup">
-///
-
-Description
-1.)document.getElementById("soup") = เข้าถึง <ul id="soup"> ใน DOM โดยใช้ id (คืน element เดียว)
-2.)document.querySelector("#soup") = ใช้ selector แบบ CSS (# หมายถึง id) → ได้ผลเหมือนกันกับ getElementById
-3.)document.querySelectorAll("#soup") = คืน NodeList (array-like object) ของ element ทั้งหมดที่ตรง selector ถึงแม้จะมีแค่ 1 element ก็อยู่ใน NodeList
-4.).length = ดูจำนวน node
-5.)[0] = เข้าถึง element ตัวแรกใน NodeList
-6.).forEach() = วนซ้ำแต่ละ node แล้ว console.log
-
-*//// 1.2 Query โดยใช้ class 
- ทุก class, id, tag จะถูกเก็บเป็น node ใน DOM Tree. querySelectorAll() จะ traverse (เดิน) tree ทั้งหมดเพื่อตรวจ selector ที่ตรงกัน จากนั้นคืน “NodeList” 
-ซึ่งมี forEach แต่ไม่ใช่ array จริง
-
-///
-//2. query element nodes that have class "vegan"
-const veganElements = document.querySelectorAll(".vegan")
-console.log(veganElements) //NodeList(3) [ li.vegan, li.vegan, li.vegan ]
-
-//3. query element nodes that have class "meat"
-const meatElements = document.querySelectorAll(".meat")
-console.log(meatElements) //NodeList(4) [ li.meat, li.meat, li.meat, li.meat ]
-
-//4.
-const firstVeganElement = document.querySelector(".vegan")
-console.log(firstVeganElement) //<li class="vegan">Vegetable Rolls</li>
-
-//5.
-const firstMeatElement = document.querySelector(".meat")
-console.log(firstMeatElement) //<li class="meat">Chicken Wings</li>
-///
-
-Description
-1.).querySelectorAll(".vegan") = คืน NodeList ของทุก element ที่มี class “vegan”
-2.).querySelector(".vegan") = คืนเฉพาะ element แรกสุดที่เจอ
-(แบบเดียวกันกับ .meat)
-
-*///// 2. Traversing (การเดิน DOM Tree) /////*
- DOM Tree เป็นแบบ “ลำดับชั้น” (parent-child-sibling) ทุก element node รู้ว่า “พ่อแม่” และ “พี่น้อง” ของมันคือใคร เราสามารถเดินไปมาระหว่าง node ได้ผ่าน property 
-เช่น.parentElement, .firstElementChild, .nextElementSibling
-
-///
-let appetizer = document.getElementById("appetizer")
-let children = appetizer.firstElementChild
-while (children){
-    console.log(children);
-    children = children.nextElementSibling
-}
-///
-
-Description
-1.)document.getElementById("appetizer") → เข้าถึง <ul id="appetizer">
-2.).firstElementChild → เข้าถึงลูกคนแรก <li class="vegan">Vegetable Rolls</li>
-3.)while(children) → วนซ้ำจนกว่าจะไม่มี sibling
-4.)children.nextElementSibling → เดินไปยังพี่น้องถัดไปใน DOM tree
-
-*///// 3. เข้าถึง Element ด้วย Attribute /////*
-
-- NodeList -> ได้จาก querySelectorAll(), forEach ใช้ได้
-- HTMLCollection -> ได้จาก getElementsBy*, ต้องแปลงก่อนใช้ array methods
-- ทั้งสองเป็น “live collection” -> หมายความว่า ถ้า DOM เปลี่ยน ค่าใน collection จะเปลี่ยนตามด้วย
-
-///
-const nameAttrElements = document.getElementsByName("fname")
-console.log(nameAttrElements)
-nameAttrElements.forEach((ele) => console.log(ele))
-
-const liElements = document.getElementsByTagName("li")
-console.log(liElements)
-const liElementsArray = Array.from(liElements)
-liElementsArray.forEach((ele) => console.log(ele))
-
-const veganClassElements = document.getElementsByClassName("vegan")
-console.log(veganClassElements)
-///
-
-Description
-1.)getElementsByName("fname") → คืน NodeList ของ element ที่มี name="fname"
-2.)getElementsByTagName("li") → คืน HTMLCollection ของทุก <li>
-3.)Array.from(liElements) → แปลง HTMLCollection เป็น array เพื่อใช้ .forEach ได้
-4.)getElementsByClassName("vegan") → คืน HTMLCollection ของทุก class="vegan"
-
-*///// 4. Manipulating Node (การจัดการ Node) /////*
-
-*//// 4.1 การลบ Node 
- removeChild() ต้องการ parent และลูก node ที่จะถูกลบ เมื่อเรียกใช้ browser จะลบ node นั้นจาก DOM Tree และ re-render ส่วนที่เหลือใหม่
-
-///
-// 1. remove Vegetable Soup
-const ulParent = document.getElementById("soup")
-const ulChildren = ulParent.children
-let vegetElement = null
-
-Array.from(ulChildren).forEach((liEle) => {
-  if (liEle.textContent.trim() === "Vegetable Soup") vegetElement = liEle
-})
-ulParent.removeChild(vegetElement)
-///
-
-Description
-1.)ulParent → เข้าถึง <ul id="soup">
-2.).children → ได้ HTMLCollection ของลูกทั้งหมด <li>
-3.)วนผ่านแต่ละ li → ตรวจข้อความด้วย .textContent.trim()
-4.)ถ้าตรง "Vegetable Soup" → เก็บไว้ใน vegetElement
-5.)ulParent.removeChild(vegetElement) → ลบออกจาก DOM Tree
-
-*//// 4.2 การแทรก Node ก่อน element อื่น 
-- createElement() -> สร้าง node ในหน่วยความจำ (ยังไม่อยู่ใน DOM)
-- insertBefore() -> เพิ่ม node เข้าก่อน reference node ภายใน parent เดียวกัน
-- Browser จะ render node ใหม่นั้นแบบเรียลไทม์
-
-///
-const ulParent = document.getElementById("soup")
-
-const newLiElement = document.createElement("li")
-newLiElement.textContent = "Cabbage Soup"
-newLiElement.setAttribute("class", "vegan")
-
-let beefElement = null
-const liChildren = ulParent.children
-Array.from(liChildren).forEach((ele) => {
-  if (ele.textContent.trim() === "Beef Soup") beefElement = ele
-})
-
-ulParent.insertBefore(newLiElement, beefElement)
-///
-
-Description
-1.)สร้าง <li> ใหม่
-2.)ใส่ข้อความ + class attribute
-3.)หาลูก element ที่เป็น “Beef Soup”
-4.)ใช้ insertBefore(newNode, referenceNode) เพื่อแทรกก่อน <li>Beef Soup</li>
-
-*//// 4.3 การแทนที่ Node
-- replaceChild() จะลบ node เก่าออกจาก DOM แล้วใส่ node ใหม่เข้าแทนในตำแหน่งเดิม
-- Browser จะ update tree structure แล้ว render ใหม่
-
-///
-const ulParent = document.getElementById("soup")
-
-const newLiElement = document.createElement("li")
-newLiElement.textContent = "Pork Soup"
-newLiElement.setAttribute("class", "meat")
-
-let beefElement = null
-const liChildren = ulParent.children
-Array.from(liChildren).forEach((ele) => {
-  if (ele.textContent.trim() === "Beef Soup") beefElement = ele
-})
-
-ulParent.replaceChild(newLiElement, beefElement)
-///
-
-Description
-1.)สร้าง <li>Pork Soup</li>
-2.)หาตัว <li>Beef Soup</li> ในลูกของ <ul>
-3.)replaceChild(newNode, oldNode) → แทนที่ element เก่าด้วยใหม่
-
-*///// Practice /////*
-
-*//// Practice 1
+*///// 1.DOM Node /////*\
+DOM (Document Object Model) คือโครงสร้างต้นไม้ (Tree Structure) ของ HTMLแต่ละส่วนของ HTML เช่น <div>, <p>, ข้อความ หรือคอมเมนต์
+จะถูกแปลงเป็น “Node” (โหนด) ที่มีชนิดแตกต่างกัน
 หลักการ
-1.) HTML ถูกโหลด → DOM Tree ถูกสร้างขึ้น
- - <button> แต่ละตัวถูกแปลงเป็น element node
- - <div id="box"> ก็เช่นกัน
-2.) JavaScript เข้าถึง DOM
- - getElementsByTagName("button") → สร้าง reference ไปยังปุ่มในหน่วยความจำ
- - getElementById("box") → เก็บ reference ไปยังกล่อง
-3.) เพิ่ม Event Listener
- - เมื่อเรียก addEventListener('click', fn) = Browser จะลงทะเบียน callback function ไว้ใน event system
- - ทุกครั้งที่ user คลิก → browser trigger callback ที่ผูกไว้
-4.) Manipulate Class
- - classList คือ object ที่ช่วยจัดการชื่อ class บน element
- - เมื่อใช้ .add() / .remove() / .toggle() = browser จะอัปเดต attribute class="..." ของ element ทันที
- - จากนั้น re-render UI ให้เห็นผล เช่น ขอบปรากฏหรือหายไป
+Browser จะ parse HTML แล้วแปลงทุกอย่างเป็น node object:
+Ex.<body>
+    Hello
+   </body>
+จะกลายเป็น:
+BODY (ELEMENT_NODE)
+TEXT("Hello") (TEXT_NODE)
 
+Node Type	        ค่าตัวเลข	ความหมาย
+Node.ELEMENT_NODE	 1	      โหนดที่เป็น element เช่น <div> <p>
+Node.ATTRIBUTE_NODE	 2	      โหนดที่เป็น attribute เช่น id, class
+Node.TEXT_NODE	     3	      โหนดข้อความ (ระหว่างแท็ก)
+Node.COMMENT_NODE	 8	      โหนดคอมเมนต์ <!-- comment -->
+Node.DOCUMENT_NODE	 9	      โหนดเอกสาร (รากของ DOM Tree)
 ///
-Description foe each line
-1.) const buttons = document.getElementsByTagName("button")
-- ใช้ document.getElementsByTagName("button") = เพื่อดึง ทุกปุ่ม <button> ในหน้าเว็บ
-- คืนค่าเป็น HTMLCollection (คล้าย array แต่ไม่ใช่ array จริง)
-- ถ้าหน้ามีปุ่ม 3 อัน ตัวแปร buttons จะมี element 3 อัน
-2.) const box = document.getElementById('box')
-- เข้าถึง element ที่มี id="box"
-- เก็บไว้ในตัวแปร box เพื่อใช้ปรับ class ทีหลัง
-3.)  Array.from(buttons).forEach((button) => {
-- Array.from(buttons) = แปลง HTMLCollection (ซึ่งใช้ forEach ไม่ได้) ให้เป็น array จริง
-- .forEach() = วนลูปใน array ที่มีปุ่มทั้งหมด
-- ตัวแปร button จะเป็นปุ่มแต่ละตัวในแต่ละรอบของลูป
-4.) button.addEventListener('click', () => {
-- ผูก event listener กับปุ่มแต่ละตัว
-- หมายความว่า: เมื่อผู้ใช้ “คลิก” ปุ่มใด ๆ = ให้ทำงานใน callback function ข้างใน { ... }
-- ใช้ arrow function () => { ... } เพราะไม่จำเป็นต้องใช้ this ในที่นี้
-5.) console.log(button.textContent);
-- แสดงข้อความที่อยู่ภายในปุ่มใน console
-- ใช้เพื่อเช็กว่าเราคลิกปุ่มไหน
-6.)
-if(button.textContent === "เพิ่มเส้นขอบ"){
-    box.classList.add("bordered")
-}
-else if (button.textContent === "ลบเส้นขอบ") {
-    box.classList.remove("bordered")
-}
-else {
-    box.classList.toggle("bordered")
-}
-- button.textContent = ใช้ตรวจข้อความในปุ่ม เพื่อแยกว่าผู้ใช้คลิกปุ่มไหน
-- box.classList.add("bordered") = เพิ่ม class "bordered" ให้กับ <div id="box">
-- box.classList.remove("bordered") = ลบ class "bordered" ออกจาก div → เส้นขอบหาย
-+ box.classList.toggle("bordered") 
- -ถ้า div ยังไม่มี class "bordered" → เพิ่มเข้าไป
- -ถ้ามีแล้ว → ลบทิ้ง
- -เหมือนสลับเปิด–ปิด
+console.log(document.body)
+console.log(document.body.nodeName)
+console.log(document.body.nodeType)
+console.log(document.body.nodeValue)
+
+if (document.body.nodeType === Node.ELEMENT_NODE)
+  console.log(`body is an element node type`)
+if (document.body.nodeType === Node.ATTRIBUTE_NODE)
+  console.log(`body is an attribute node type`)
+if (document.body.nodeType === Node.TEXT_NODE)
+  console.log(`body is a text node type`)
 ///
 
-สรุปสั้นๆ
-getElementsByTagName() = ดึงทุก element ตาม tag name	-> คืน HTMLCollection
-Array.from() = แปลง HTMLCollection → Array	-> เพื่อใช้ .forEach()
-addEventListener('click', fn)	= ผูกฟังก์ชันกับเหตุการณ์คลิก	-> ทำให้ปุ่มตอบสนองได้
-classList.add()	= เพิ่ม class	ใช้จัดการ CSS
-classList.remove() =	ลบ class	
-classList.toggle() = สลับเปิด/ปิด class	-> ใช้แทน add/remove ได้ในบางกรณี
+Description
+1.)document.body → เข้าถึง <body> element ของหน้า HTML
+2.).nodeName → คืนชื่อของ node เช่น "BODY"
+3.).nodeType → บอกชนิดของ node (เป็นตัวเลข)
+4.).nodeValue → ใช้กับ TextNode หรือ Attribute เพื่ออ่านค่าข้อความ
 
-*//// Practice 2
-*/// แบบที่ 1
-// แบบใช้ CSS dataset
-const box = document.getElementById("box")
-const buttons = document.getElementsByTagName("button")
 
-Array.from(buttons).forEach((button) => {
-  button.addEventListener("click", () => {
-    const color = button.dataset.color
-    box.style.background = color
-    console.log(`Change to color ${color}`);
-  })
+*//// 1.1 ฟังก์ชันตรวจชนิด Node
+function checkNodeType(node) {
+  console.log("Node Name:", node.nodeName);
+  console.log("Node Type:", node.nodeType);
+
+  switch (node.nodeType) {
+    case Node.ELEMENT_NODE:
+      console.log("This is an ELEMENT NODE.");
+      break;
+    case Node.ATTRIBUTE_NODE:
+      console.log("This is an ATTRIBUTE NODE.");
+      break;
+    case Node.TEXT_NODE:
+      console.log("This is a TEXT NODE.");
+      break;
+    case Node.COMMENT_NODE:
+      console.log("This is a COMMENT NODE.");
+      break;
+    case Node.DOCUMENT_NODE:
+      console.log("This is a DOCUMENT NODE.");
+      break;
+    default:
+      console.log("Unknown node type.");
+  }
+}
+const bodyElement = document.body;
+checkNodeType(bodyElement);
+
+Description
+1.)ฟังก์ชันนี้รับ node มา แล้วตรวจชนิดด้วย nodeType
+2.)ใช้ switch-case เพื่อแสดงผลว่า node เป็นอะไร
+3.)เช่น <div> = ELEMENT_NODE, <!-- comment --> → COMMENT_NODE
+
+*///// 2. การเข้าถึงลูก Node และ Element (childNodes vs children) /////*
+- DOM Tree มี node ทุกชนิดในลำดับจริงของ HTML
+- childNodes จะเก็บทุกอย่าง (รวม space และข้อความ)
+- children จะกรองเฉพาะ node ประเภท ELEMENT เท่านั้น
+///
+const divElement = document.getElementById("exampleElement")
+// childNodes
+const divChildNodes = divElement.childNodes
+console.log(`length: ${divElement.childNodes.length}`)
+divChildNodes.forEach((child) => {
+  console.log(child.nodeName)
+  console.log(child.nodeType)
+  console.log(child.nodeValue)
+})
+// children
+const divChildren = divElement.children
+console.log(`length: ${divElement.children.length}`)
+Array.from(divChildren).forEach((child) => {
+  console.log(child.nodeName)
+  console.log(child.nodeType)
+  console.log(child.nodeValue)
 })
 ///
 
 Description
-1.)const box = document.getElementById("box") = เข้าถึงกล่อง <div id="box"></div> ที่จะเปลี่ยนสี
-2.)const buttons = document.getElementsByTagName("button") = ดึงปุ่มทั้งหมดที่อยู่ในหน้า 
-3.)Array.from(buttons).forEach((button) => { ... }) = แปลง HTMLCollection ให้เป็น array แล้ววนทุกปุ่ม
-4.)button.addEventListener("click", () => { ... }) = ผูก event “click” ให้ปุ่มแต่ละอัน
-5.)const color = button.dataset.color = ดึงค่าจาก attribute data-color ของปุ่มนั้น 
-   เช่น ถ้าปุ่ม <button data-color="red">สีแดง</button> → color = "red"
-6.)box.style.background = color = เข้าถึง style ของกล่อง แล้วเปลี่ยน background เป็นค่าสีที่ได้
-7.)console.log(Change to color ${color}) = แสดงข้อความใน console ว่าเปลี่ยนสีเป็นอะไร
+childNodes = คืน NodeList ที่รวมลูกทุกชนิด (Text, Comment, Element)
+children = คืนเฉพาะ Element Node เท่านั้น
+ถ้า <div> มีข้อความ, คอมเมนต์, และ <span> จะได้จำนวนต่างกัน
 
-*/// แบบที่ 2
-const buttons = document.getElementsByTagName("button")
-const box = document.getElementById('box')
-const color = document.createAttribute('style')
-color.value = "background-color:"
-box.setAttributeNode(color)
-console.log(box.attributes);
+/// ตัวอย่างที่ 2 
+<div id="exampleElement" style="font-size: 10pt">
+  <!-- this is a comment node -->
+  This is some <span style="display: none">hidden</span> text content.
+</div>
 
-Array.from(buttons).forEach((button) => {
-  button.addEventListener('click', () => {
-    console.log(button.textContent);
-    if(button.textContent === "สีแดง"){
-        color.value = "background-color:red"
-    }
-    else if (button.textContent === "สีน้ำเงิน") {
-        color.value = "background-color:blue"
-    }
-    else {
-        color.value = "background-color:green"
-    }
-  })
-})
+ผลที่ได้
+childNodes.length = 5 (รวม comment, text, span ฯลฯ)
+children.length = 1 (เฉพาะ <span>)
+
+*///// 3. การสร้าง Element และ Attribute (Create + Append + Get) /////*
+- DOM สร้าง node ใหม่ใน memory ก่อน แล้ว append เข้ากับ tree
+- เมื่อ append -> browser render บนหน้าทันที
+
+///
+const divElement = document.getElementById("subject")
+const pElement = document.createElement("p")
+pElement.setAttribute("id", "int141")
+pElement.setAttribute("style", "color:red")
+pElement.setAttribute("name", "core")
+
+const pText = document.createTextNode("INT141")
+pElement.appendChild(pText)
+divElement.appendChild(pElement)
+
+console.log(pElement.getAttribute("id")) // int141
+console.log(pElement.attributes[0]) // id="int141"
+console.log(pElement.attributes[0].ownerElement) // <p id="int141">INT141</p>
 ///
 
 Description
-1.)const buttons = document.getElementsByTagName("button") = เข้าถึงทุก <button> เช่นเดิม
-2.)const box = document.getElementById('box') = กล่องเป้าหมายที่จะเปลี่ยนสี
-3.)const color = document.createAttribute('style') = สร้าง attribute ใหม่ชื่อ "style" 
-4.)color.value = "background-color:" = กำหนดค่าเริ่มต้นให้ attribute (ตอนนี้ยังไม่มีสีจริง)
-5.)box.setAttributeNode(color) = นำ attribute style ที่เราสร้าง ไปใส่ใน element <div id="box">
-6.)console.log(box.attributes) = แสดง attributes ทั้งหมดของ box (เช่น id และ style)
-7.)Array.from(buttons).forEach((button) => { ... }) = วนทุกปุ่ม และผูก event listener
-8.)button.addEventListener('click', () => { ... }) = ผูกเหตุการณ์คลิกให้แต่ละปุ่ม
-9.)if(button.textContent === "สีแดง"){ ... } = ตรวจข้อความในปุ่มเพื่อตัดสินใจว่าจะเปลี่ยนเป็นสีอะไร
-10.)color.value = "background-color:red" = เปลี่ยนค่าภายใน attribute style ที่ผูกกับ box 
-    Browser จะเห็นว่า attribute style ถูกแก้ แล้ว render สีใหม่
+1.)document.createElement("p") → สร้าง <p> ใหม่ในหน่วยความจำ
+2.)setAttribute(name, value) → เพิ่ม attribute ให้ element เช่น id, style
+3.)createTextNode("INT141") → สร้าง node ข้อความ
+4.)appendChild() → ผูก text เข้ากับ <p> แล้วผูก <p> เข้ากับ <div>
+5.).getAttribute("id") → อ่านค่าของ attribute
+6.).attributes → คืน collection ของ attribute ทั้งหมดของ element
+
+*///// 4. การเข้าถึงข้อความใน Element (innerHTML / innerText / textContent) /////*
+
+///
+let el = document.getElementById("demo")
+console.log(el.innerHTML)
+console.log(el.innerText)
+console.log(el.textContent)
+
+const pElement = document.createElement("p")
+pElement.innerText = "<i>Sample Content</i>"
+document.body.appendChild(pElement)
+///
+
+Property	อ่าน/เขียน	  แปล HTML tag	   รวม Hidden Text ไหม
+innerHTML	 ใช่	      แปล HTML	       รวม
+innerText	 ใช่	      แสดงเป็นข้อความ	 ข้าม Hidden
+textContent	 ใช่	      แสดงข้อความตรงๆ	รวม Hidden
+
+/// ตัวอย่าง
+<div id="demo">
+  <b>Hello</b>
+  <span style="display:none">hidden</span>
+  world
+</div>
+///
+innerHTML	 <b>Hello</b><span style="display:none">hidden</span>world
+innerText	 Hello world
+textContent	 Hello hidden world
+
+*///// 5. การเชื่อมโยงความสัมพันธ์ (Parent–Child–Sibling) /////*
+DOM ทุก node มี reference ที่เชื่อมถึงกัน
+ parentElement = ลูกทั้งหมด (children)
+ previousElementSibling = พี่
+ nextElementSibling = น้อง
+///
+let el = document.getElementById("drink")
+const allDrinks = el.children
+Array.from(allDrinks).forEach((drink) => console.log(drink))
+
+let teaDrink = allDrinks[1]
+console.log(teaDrink.textContent)
+
+console.log(teaDrink.previousElementSibling)
+console.log(teaDrink.nextElementSibling)
+console.log(teaDrink.parentElement)
+///
+
+Description
+1).children = คืนลูกทั้งหมด (เฉพาะ element node)
+2.)[1] = เข้าถึง <li>Tea</li>
+3.).previousElementSibling = <li>Coffee</li>
+4.).nextElementSibling = <li>Chocolate</li>
+5.).parentElement = <ul id="drink">
 

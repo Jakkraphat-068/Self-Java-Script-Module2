@@ -1,3 +1,4 @@
+//inside MediaDeviceInfo.js
 import { CookieUtil } from "./cookieUtil"
 
 // console.log(document.cookie)

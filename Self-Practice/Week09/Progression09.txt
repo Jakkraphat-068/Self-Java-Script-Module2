@@ -1,0 +1,269 @@
+Event คือ “เหตุการณ์” ที่เกิดขึ้นในหน้าเว็บ เช่น
+ผู้ใช้คลิกปุ่ม → click event
+ผู้ใช้พิมพ์ข้อความ → keypress event
+หน้าโหลดเสร็จ → load event
+ขนาดหน้าต่างเปลี่ยน → resize event
+JavaScript สามารถ “จับ” เหตุการณ์เหล่านี้และ “ตอบสนอง” ได้โดยใช้ฟังก์ชันที่เรียกว่า Event Listener
+
+*///// 1. การเพิ่ม Event Listener เบื้องต้น /////*
+
+///
+const okButton = document.querySelector("button")
+
+okButton.addEventListener("click", (e) => {
+  console.log(`event.target: ${e.target}`)
+  console.log(`event.currentTarget: ${e.currentTarget}`)
+  console.log(`event.eventPhase: ${e.eventPhase}`)
+  console.log(`event.type: ${e.type}`)
+  console.log("Button was clicked!")
+})
+///
+
+Description
+1.)document.querySelector("button") = เลือกปุ่ม <button> ตัวแรกในหน้า
+2.).addEventListener("click", fn) =	เพิ่มตัวฟัง event เมื่อปุ่มถูกคลิก
+3.)(e) = ออบเจ็กต์ Event ที่ browser ส่งมา
+4.)e.target	= องค์ประกอบที่เกิด event จริง ๆ (เช่นปุ่ม)
+5.)e.currentTarget = องค์ประกอบที่ตัว listener ถูกติดไว้
+6.)e.eventPhase = ขั้นตอนของ event (capturing / bubbling)
+7.)e.type = ประเภทของ event เช่น "click"
+
+ผลลัพธ์ตอนคลิกปุ่ม
+event.target: [object HTMLButtonElement]
+event.currentTarget: [object HTMLButtonElement]
+event.eventPhase: 2
+event.type: click
+Button was clicked!
+
+*///// 2. Event Bubbling /////*
+Event bubbling คือ เมื่อ element ลูกเกิด event → event จะ “ลอยขึ้น” ไปหา parent
+ลำดับคือ: button → div → body → document → window
+
+///
+const divElement = document.querySelector("div")
+divElement.addEventListener("click", (event) => {
+  console.log(`Div element was clicked!`)
+})
+
+const bodyElement = document.body
+bodyElement.addEventListener("click", (event) => {
+  console.log(`Body element was clicked!`)
+})
+///
+
+Description
+ถ้าคลิกปุ่มใน div
+ 1.) จะเรียก event ของปุ่มก่อน
+ 2.) แล้วถึง div
+ 3.) แล้วถึง body
+
+ *///// 3. การยกเลิกการทำงานเริ่มต้นของ Form และ Link /////*
+
+ /// ยกเลิกพฤติกรรมของ <form> (preventDefault)
+ function validate() {
+  const fname = document.getElementsByName('fname')[0].value
+  const lname = document.getElementsByName('lname')[0].value
+  if (fname.trim() == '' || lname.trim() == '') {
+    console.log('input is empty');
+  }
+}
+
+const submit = document.querySelector('input[type=submit]')
+submit.addEventListener('click', (e) => {
+  e.preventDefault() // ❗ ป้องกันไม่ให้ form ส่งข้อมูล
+  validate()
+})
+///
+
+/// ยกเลิกพฤติกรรมของ <a> (preventDefault)
+const aElement = document.querySelector("a")
+aElement.addEventListener("click", (e) => {
+  e.preventDefault()
+  console.log("visit link was canceled")
+})
+///
+
+Description
+1.)preventDefault() ใช้เพื่อ ป้องกันการทำงานเริ่มต้นของ element
+2.)เช่น ป้องกัน <a> จากการไปยังลิงก์ หรือ <form> จากการส่งข้อมูล
+
+*///// 4. ตรวจสอบข้อมูลใน Form /////*
+
+///
+const submitButton = document.querySelector("input[type='submit']")
+submitButton.addEventListener("click", (e) => {
+  e.preventDefault()
+  const inputElements = document.querySelectorAll("input")
+  inputElements.forEach((ele) => {
+    const attr = ele.getAttribute("type")
+    if (attr === "text") {
+      if (ele.value.trim().length === 0) console.log("invalid data")
+    }
+  })
+})
+///
+Description
+1.)ดึง input ทั้งหมดด้วย querySelectorAll("input")
+2.)ตรวจสอบว่าชนิดเป็น text หรือไม่
+3.)ถ้าไม่มีข้อความ (trim แล้วว่าง) → แจ้งว่า invalid
+
+*///// 5. Event Timing (DOMContentLoaded vs load) /////*
+
+///
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('DOM is ready!')
+  const heading = document.createElement('h2')
+  heading.textContent = 'This was added when DOM was ready!'
+  document.body.appendChild(heading)
+})
+
+window.addEventListener('load', () => {
+  console.log('All resources (images, CSS, scripts) are fully loaded!')
+})
+///
+
+Description
+DOMContentLoaded ->	DOM ถูกสร้างเสร็จแล้ว -> ใช้ได้ก่อนโหลดภาพหรือ CSS เสร็จ
+load -> ทุก resource โหลดครบหมด -> ใช้ตรวจสอบเมื่อหน้าเว็บพร้อมสมบูรณ์
+
+*///// 6. Event ของ Window /////*
+
+///
+const info = document.getElementById('info')
+
+// Resize
+window.addEventListener('resize', () => {
+  info.textContent = `Window resized: ${window.innerWidth} x ${window.innerHeight}`
+})
+
+// Scroll
+window.addEventListener('scroll', () => {
+  info.textContent = `Scrolled to Y: ${window.scrollY}`
+})
+///
+
+Description
+1.)เมื่อผู้ใช้เปลี่ยนขนาดหน้าต่าง → event resize จะเกิดขึ้น
+2.)เมื่อเลื่อนหน้าจอ → scroll event จะทำงาน
+
+*///// 7. Mouse Event /////*
+
+///
+const info = document.getElementById('info')
+
+info.addEventListener('mouseout', () => {
+  console.log('mouse out')
+})
+
+info.addEventListener('mouseover', () => {
+  console.log('mouse over')
+})
+
+window.addEventListener('mousemove', (event) => {
+  info.textContent = `Mouse at X: ${event.clientX}, Y: ${event.clientY}`
+})
+///
+
+Description
+1.)mouseover -> เมื่อนำเมาส์ไปชี้เหนือ element -> แสดง tooltip
+2.)mouseout -> เมื่อนำเมาส์ออกจาก element -> ซ่อน tooltip
+3.)mousemove -> เคลื่อนเมาส์ภายในหน้าเว็บ -> แสดงตำแหน่งเมาส์แบบเรียลไทม์
+
+*///// 8. Keyboard Event /////*
+
+///
+const inputMessage = document.getElementById('message')
+inputMessage.addEventListener('keyup', (event) => {
+  if (event.key === 'Enter')  
+    console.log(event.target.value)
+})
+///
+
+Description
+1.)keyup = เกิดขึ้นเมื่อปล่อยปุ่มบนคีย์บอร์ด
+2.)event.key = คืนค่าชื่อปุ่ม เช่น “a”, “Enter”, “Backspace”
+
+*///// 9. Blur Event (เมื่อ focus หาย) /////*
+blur = ทำงานเมื่อ element “สูญเสียโฟกัส” (focus ออกจากช่อง input)
+ใช้เพื่อตรวจสอบข้อมูลหลังผู้ใช้กรอกจบ
+
+///
+const fName = document.getElementById("fname")
+const lName = document.getElementById("lname")
+const message = document.getElementById("message")
+
+fName.addEventListener("blur", (e) => {
+  if (e.target.value.trim().length === 0) {
+    message.style.color = "red"
+    message.textContent = "your firstname is empty"
+  }
+})
+lName.addEventListener("blur", (e) => {
+  if (e.target.value.trim().length === 0) {
+    message.style.color = "red"
+    message.textContent = "your last name is empty"
+  }
+})
+///
+
+*///// Practice /////*
+
+*/// Practice 1
+///
+const createButton = document.querySelector("button#submit")
+
+createButton.addEventListener("click", (e) => {
+    e.preventDefault()
+    const userInput = document.querySelector("input#username")
+    const emailInput = document.querySelector("input#email")
+    const passInput = document.querySelector("input#password")
+    const confirmPassInput = document.querySelector("input#confirm-password")
+
+    const display = document.querySelector('p')
+
+    if (userInput.value.length === 0 || emailInput.value.length === 0) {
+        display.textContent = "missing some values, please try again!"
+        display.style.color = "red"
+    }
+    else if (passInput.value !== confirmPassInput.value && (passInput.value.length !== 0 || confirmPassInput.value.length !== 0 )) {
+        display.textContent = "password and confirm do not match, check again"
+        display.style.color = "red"
+    }
+    else if (passInput.value === confirmPassInput.value && (passInput.value.length !== 0 || confirmPassInput.value.length !== 0 )) {
+        display.textContent = "your data complete"
+        display.style.color = "green"
+    }
+})
+///
+
+ผลที่ได้
+1.)ใช้ตรวจสอบข้อมูลก่อนส่ง form
+2.)ตรวจว่าใส่ username, email ครบไหม
+3.)ตรวจว่า password กับ confirm ตรงกันไหม
+4.)แสดงข้อความสีแดงหรือเขียวขึ้นอยู่กับผลตรวจ
+
+*//// Practice 2 
+///
+let text_input = document.getElementById('keyInput')
+let show_keyLog = document.getElementById('keyLog')
+
+const spanElement = document.createElement("span");
+spanElement.style.color = "blue";
+
+text_input.addEventListener("keypress",(e)=>{
+    const textNode = document.createTextNode(`You pressed: ` + e.key );
+    const br = document.createElement('br');
+    if(e.key === "Enter"){
+        show_keyLog.appendChild(spanElement);
+        spanElement.appendChild(textNode)
+    }else{
+        show_keyLog.appendChild(textNode);
+    }
+    show_keyLog.appendChild(br);
+})
+///
+
+ผลที่ได้
+1.)ใช้ event keypress เพื่อจับคีย์ทุกตัวที่ผู้ใช้พิมพ์
+2.)ทุกครั้งที่พิมพ์ จะสร้าง text node "You pressed: X"
+3.)ถ้ากด Enter → ข้อความจะเป็นสีน้ำเงิน
